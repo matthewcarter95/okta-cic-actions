@@ -1,0 +1,65 @@
+/*
+
+                                                                             
+      _____        _____    _____      _____  _____   ______        ______   
+  ___|\    \   ___|\    \  |\    \    /    /||\    \ |\     \   ___|\     \  
+ /    /\    \ |    |\    \ | \    \  /    / | \\    \| \     \ |     \     \ 
+|    |  |    ||    | |    ||  \____\/    /  /  \|    \  \     ||     ,_____/|
+|    |  |____||    | |    | \ |    /    /  /    |     \  |    ||     \--'\_|/
+|    |   ____ |    | |    |  \|___/    /  /     |      \ |    ||     /___/|  
+|    |  |    ||    | |    |      /    /  /      |    |\ \|    ||     \____|\ 
+|\ ___\/    /||____|/____/|     /____/  /       |____||\_____/||____ '     /|
+| |   /____/ ||    /    | |    |`    | /        |    |/ \|   |||    /_____/ |
+ \|___|    | /|____|____|/     |_____|/         |____|   |___|/|____|     | /
+   \( |____|/   \(    )/          )/              \(       )/    \( |_____|/ 
+    '   )/       '    '           '                '       '      '    )/    
+        '                                                              '     
+
+*/
+exports.onExecutePostUserRegistration = async (event, api) => {
+  console.log(event.user.email);
+
+	const axios = require('axios');
+
+  var xml2js = require('xml2js');
+
+  //Call Phone Validation Service
+	const res = await axios.get('https://ws.cdyne.com/phoneverify/phoneverify.asmx/CheckPhoneNumber?LicenseKey=' + event.secrets.cdyneLicenseKey +  '&PhoneNumber=' + event.user.user_metadata.phone_number);
+  const phoneData = res.data;
+  // Mock data shim
+  //const phoneData = '<?xml version="1.0" encoding="UTF-8" ?><PhoneReturn xmlns:xsd="http://www.w3.org/2001/XMLSchema"><Wireless>'+event.user.user_metadata.phone_number+'</Wireless></PhoneReturn>'
+
+  // const res = axios.get('https://ws.cdyne.com/phoneverify/phoneverify.asmx/CheckPhoneNumber?LicenseKey=D061BFE1-6344-421C-8B6A-D4A1826E1B0F&PhoneNumber=' + event.user.phone_number, {
+  //   headers: {
+  //       'Content-Type': 'application/xml'
+  //   }
+  // });
+  
+  //JSDOM
+  // const dom = new jsdom.JSDOM(res);
+   // console.log("Response: " , res.data);
+  //  console.log("KEYS: ", Object.keys(dom.window.document));
+  // console.log(dom.querySelector("wireless").textContent);
+  
+  var wirelessCheck;
+  // var parser = new xml2js.Parser
+  var parseString = require('xml2js').parseString;
+  //var xml = "<root>Hello xml2js!</root>"
+  parseString(phoneData, {trim: true}, function (err, result) {
+      console.log(result);
+      wirelessCheck = result.PhoneReturn.Valid[0];
+  });
+  
+
+  // console.log(dom.window.document.contentType);
+  // ().querySelector('Wireless'));
+
+  // const wirelessCheck = dom.window.document.querySelector('Wireless').textContent;
+
+   console.log(wirelessCheck);
+
+	// if(!wirelessCheck)
+  // 	api.access.deny('Phone_Not_Mobile', 'Phone does not accept text messages.');
+};
+
+

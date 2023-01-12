@@ -1,0 +1,22 @@
+/**
+* Handler that will be called during the execution of a PreUserRegistration flow.
+*
+* @param {Event} event - Details about the context and user that is attempting to register.
+* @param {PreUserRegistrationAPI} api - Interface whose methods can be used to change the behavior of the signup.
+*/
+exports.onExecutePreUserRegistration = async (event, api) => {
+  console.log(event.user.email);
+	// Use Validation API - https://www.mailboxvalidator.com/api-single-validation
+	const axios = require('axios');
+	const res = await axios.get('https://api.mailboxvalidator.com/v1/validation/single?key=' + event.secrets.apikey + '&email=' + event.user.email);
+  const validDomain = res.data.is_domain === 'True';
+	const validEmail = res.data.is_verified === 'True';
+	const emailDomain = res.data.domain;
+	console.log(validDomain);
+  console.log(validEmail);
+	if(!validDomain)
+  	api.access.deny('Email_Domain_Not_Valid', 'Invalid Email Domain');
+};
+
+
+

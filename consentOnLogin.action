@@ -1,0 +1,54 @@
+const express = require('express');
+const app = express();
+
+/**
+ * After login, we check to see if the redirect flag is set.
+ * If not, the client is redirected to the site with a session token containing email and user_id.
+ * If flag is set, then user is not redirected.
+*/
+exports.onExecutePostLogin = async (event, api) => {
+    const redirectedAlready = event.user.app_metadata.consentVerified;
+    
+  
+    const token = api.redirect.encodeToken({
+    secret: event.secrets.MY_REDIRECT_SECRET,
+    expiresInSeconds: 60, 
+    payload: {
+      // Custom claims to be added to the token
+      email: event.user.email,
+      externalUserId: event.user.user_id,
+    },
+  });
+  if(!redirectedAlready) {
+    api.redirect.sendUserTo("https://ubiquitous-heliotrope-gong.glitch.me/arengu", {
+      query: { session_token: token }
+    });
+  }
+};
+/**
+ * Once redirected back to the /continue endpoint, we are
+ *  - Setting the app_metadata with the flag so that it won't redirect again
+ *  - Setting a claim in the token indicating the redirect occurred in this session
+ **/
+
+exports.onContinuePostLogin = async (event, api) => {
+  api.authentication.recordMethod('http://demo.verifier.id');
+  api.user.setAppMetadata('consentVerified', true);
+
+  var Analytics = require('analytics-node');
+  var analytics = new Analytics(event.secrets.SegmentSourceKey);
+  let ts = Date.now();
+
+
+  analytics.track({
+   userId:event.user.user_id,
+   event: 'Consent Acknowledged',
+   properties: {
+     via: 'loud-sulfuric-ceratonykus.glitch.me/idverify'
+   }
+ });
+
+  // use the data encoded in the token, such as: 
+ api.idToken.setCustomClaim('consentVerified', 'true');
+}
+

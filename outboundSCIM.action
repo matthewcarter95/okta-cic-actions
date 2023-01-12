@@ -1,0 +1,37 @@
+
+const axios = require('axios');
+exports.onExecutePreUserRegistration = async (event, api) => {
+  const url = 'https://scim.us-east-1.amazonaws.com/f3v9da48b00-610b-4053-bd6c-704ad05d661a/scim/v2/Users';
+  
+  const options = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-type': 'application/json',
+      'Authorization': 'Bearer ' +  event.secrets.SCIM_TOKEN 
+      }
+  };
+  const scim_schema = ['urn:ietf:params:scim:schemas:core:2.0:User'];
+
+  const lastName = event.user.family_name;
+  const firstName = event.user.given_name;
+  const nameJSON = {
+      'familyName': lastName,
+      'givenName': firstName
+    };
+
+  const data ={
+    // schemas: scim_schema,
+    active: true,
+    externalId: event.user.user_id,
+    userName: event.user.email,
+    name: nameJSON,
+    displayName: event.user.name
+  }
+
+	const res = await axios.post(url, data, options);
+  console.log(res);
+	if(res.statusText === 'Created') {
+    api.user.setAppMetadata("SCIMtoAWS", true);
+  }
+};
+

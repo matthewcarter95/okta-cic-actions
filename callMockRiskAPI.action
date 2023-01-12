@@ -1,0 +1,25 @@
+exports.onExecutePostLogin = async (event, api) => {
+  const axios = require('axios');
+
+  const url = 'https://pa5v7wpff4b4vk3trnnxqkhami0nscjj.lambda-url.us-east-1.on.aws/';
+  
+  const options = {
+    headers: {
+      'Accept': 'application/json',
+      'Content-type': 'application/json'
+      }
+  };
+
+
+	const res = await axios.get(url, options);
+  // console.log(res);
+  console.log(res.data.risk);
+	if(res.data.risk === 'MFA') {
+    api.user.setAppMetadata("MFA", true);
+    api.multifactor.enable("any");
+  } else if (res.data.risk === 'DENY') {
+    api.access.deny("Risk API returned deny!");
+    } else {
+      console.log('User may proceed.')
+    }
+};

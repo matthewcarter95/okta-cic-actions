@@ -1,0 +1,10 @@
+/**
+ * Sets Roles for DelegatedAdmin app permissions
+*/
+exports.onExecutePostLogin = async (event, api) => {
+  const namespace = 'https://example.com/auth0-delegated-admin';
+  if (event.client.client_id === 'AmPjXgfqRqWSH3xhIHt8GW9UD6GH3W2h' && event.authorization) {
+    api.idToken.setCustomClaim(namespace, { "roles": event.authorization.roles });
+  }
+};
+
