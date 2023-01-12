@@ -25,4 +25,9 @@ Shows an outbound SCIM user create to Amazon IAM Identity Center. Requires a Sec
 
 A couple of redirect examples to a glitch page (with embedded Arengu) for consent/extended registration/progressive profile
 
+* RegisterWithConsent.action (pre-registration)
+
+Uses Twilio Segment as a CDP to register the user with Segment and adds a tracking record for registration. The same code block can be used post-login or other actions to record IAM activity in Segment. 
+Requires SegmentSourceKey added as a secret in the action
+
 * COMING SOON: Create unique username from given+last name
